@@ -12,7 +12,7 @@ class Film:
     def __str__(self):
         return f"Название: {self.title}\nГод: {self.year}"
 
-    def selection_films(self, api_choice)                                                                                                                                                                                                                                                                                                                                                                                                      ):
+    def selection_films(self, api_choice):
         response = requests.get(
             api_choice,
             headers={
