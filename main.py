@@ -22,7 +22,7 @@ class Film:
         ).json()
 
         count_pages = response["pagesCount"]
-        for page in count_pages:
+        for page in range(count_pages):
             films = []
             for film_hash in response["films"]:
                 film = Film(film_hash)
