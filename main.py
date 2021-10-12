@@ -1,6 +1,6 @@
 import requests
 
-URL_API = "https://kinopoiskapiunofficial.tech/api/v2.2/films/top"
+URL_API = "https://kinopoiskapiunofficial.tech"
 API_KEY = "14cc3ea4-5777-4de1-b893-673a60e3aaa4"
 
 
@@ -12,10 +12,9 @@ class Film:
     def __str__(self):
         return f"Название: {self.title}\nГод: {self.year}"
 
-    def selection_top_films(self)                                                                                                                                                                                                                                                                                                                                                                                                      ):
+    def selection_films(self, api_choice)                                                                                                                                                                                                                                                                                                                                                                                                      ):
         response = requests.get(
-            URL_API,
-            params={"page": 1},
+            api_choice,
             headers={
                 "Content-type": "application/json",
                 "X-API-KEY": API_KEY
@@ -30,5 +29,8 @@ class Film:
                 films.append(film)
             yield films
 
-for film in Film.selection_top_films():
-    print(f"{film}\n")
+    def print_film(self, films):
+        for film in films: print(f"{film}\n")
+
+films = Film.selection_top_films(URL_API + '/api/v2.2/films/top')
+Film.print_film(films)
