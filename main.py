@@ -33,18 +33,6 @@ def selection_from_films(choice_api: str, parameters: dict):
     ).json()
     return response
 
-def film_show(choice_api: str, parameters: dict):
-    global pages_number
-    while True:
-        response = selection_from_films(choice_api, parameters)
-        films = Film.films_to_output_format(response)
-        Film.print_films(films)
-        if pages_number == response["pagesCount"]: break  # вывели последнюю страницу
-        choice_print = input("Вывести следующую страницу?\n1.Да\n2.Нет\n")
-        if choice_print == "2":
-            return
-        pages_number +=1
-
 print(inspect.cleandoc("""Что хотите посмотреть?
                        1. ТОП фильмов
                        2. Выбрать фильмы по жанру"""))
@@ -52,8 +40,17 @@ choice_show = input()
 
 if choice_show == '1':
     pages_number = 1
-    film_show('/api/v2.2/films/top', {"page": pages_number})
-
+    while True:
+        response = selection_from_films('/api/v2.2/films/top', 
+                                        {"page": pages_number})
+        films = Film.films_to_output_format(response)
+        Film.print_films(films)
+        if pages_number == response["pagesCount"]: 
+            break # вывели последнюю страницу
+        choice_print = input("Вывести следующую страницу?\n1.Да\n2.Нет\n")
+        if choice_print == "2":
+            break
+        pages_number +=1
 elif choice_show == '2':
     response = selection_from_films('/api/v2.1/films/filters', {})
     genres = response['genres']
@@ -69,5 +66,15 @@ elif choice_show == '2':
         raise SystemExit
 
     pages_number = 1
-    film_show('/api/v2.1/films/search-by-filters', 
-              {"page": pages_number, "genre": parameter_id})
+    while True:
+        response = selection_from_films('/api/v2.1/films/search-by-filters', 
+                                        {"page": pages_number, 
+                                        "genre": parameter_id})
+        films = Film.films_to_output_format(response)
+        Film.print_films(films)
+        if pages_number == response["pagesCount"]: 
+            break  # вывели последнюю страницу
+        choice_print = input("Вывести следующую страницу?\n1.Да\n2.Нет\n")
+        if choice_print == "2":
+            break
+        pages_number +=1
