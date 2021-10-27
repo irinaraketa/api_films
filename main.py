@@ -21,9 +21,6 @@ class Film:
     def __str__(self):
         return f"Название: {self.title}\nГод: {self.year}"
 
-    def print_film(self, films):
-        for film in films: print(f"{film}\n")
-
 
 def selection_from_films(choice_api: str, parameters: dict):
     response = requests.get(
