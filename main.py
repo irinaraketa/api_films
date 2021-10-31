@@ -10,17 +10,6 @@ class Film:
     def films_to_output_format(all_films):
         return [Film(film_hash) for film_hash in all_films]
 
-    @staticmethod
-    def print_films(films_iter, number_films: int) -> bool:
-        # Распечатать number_films фильмов. 
-        # Есои иттерация завершиться, вернет False
-        for i in range(number_films):
-            try:
-                print(f"{next(films_iter)}\n")
-            except StopIteration:
-                return False
-        return True
-
     def __init__(self, film_hash):
         self.title = film_hash["nameRu"]
         self.year = film_hash["year"]
@@ -28,8 +17,24 @@ class Film:
     def __str__(self):
         return f"Название: {self.title}\nГод: {self.year}"
 
+class Console:
+    @staticmethod
+    def print_films(films_iter, number_films: int) -> bool:
+        # Распечатать number_films фильмов. 
+        # Если иттерация завершиться, вернет False
+        for i in range(number_films):
+            try:
+                print(f"{next(films_iter)}\n")
+            except StopIteration:
+                return False
+        return True
 
-def selection_from_films(choice_api: str, parameters: dict, flag: bool):
+    @staticmethod
+    def print_type_films(array, type_film):
+        for i in array: print(i[type_film])
+
+
+def get_films(choice_api: str, parameters: dict):
     pages_number = 1
     all_films = []
     while True:
@@ -41,13 +46,20 @@ def selection_from_films(choice_api: str, parameters: dict, flag: bool):
                 "X-API-KEY": API_KEY
             }
         ).json()
-        if flag:
-            return response
         all_films.extend(response['films']) 
-        if pages_number == response["pagesCount"]: 
-            break # вывели последнюю страницу
+        if pages_number == response["pagesCount"]:  # последняя страница
+            break
         pages_number +=1
     return all_films
+
+def get_type_films(choice_api: str):
+    return requests.get(
+        URL_API + choice_api,
+        headers={
+            "Content-type": "application/json",
+            "X-API-KEY": API_KEY
+        }
+    ).json()
 
 print(inspect.cleandoc("""Что хотите посмотреть?
                        1. ТОП фильмов
@@ -55,12 +67,12 @@ print(inspect.cleandoc("""Что хотите посмотреть?
 choice_show = input()
 
 if choice_show == '1':
-    all_films = selection_from_films('/api/v2.2/films/top', {}, False)
+    all_films = get_films('/api/v2.2/films/top', {})
 elif choice_show == '2':
-    response = selection_from_films('/api/v2.1/films/filters', {}, True)
+    response = get_type_films('/api/v2.1/films/filters')
     genres = response['genres']
     print('В нашем списке фильмов есть следующие жанры:')
-    for i in genres: print(i['genre'])
+    Console.print_type_films(genres, 'genre')
     choice_genre = input('Какой жанр хотите посмотреть? ')
     for genre in genres:
         if genre['genre'] == choice_genre:
@@ -70,15 +82,14 @@ elif choice_show == '2':
         print('Такого жанра в нашем списке нет')
         raise SystemExit
 
-    all_films = selection_from_films('/api/v2.1/films/search-by-filters', 
-                                     {"genre": parameter_id}, False)
+    all_films = get_films('/api/v2.1/films/search-by-filters', 
+                          {"genre": parameter_id})
 
 films = Film.films_to_output_format(all_films)
 films_iter = iter(films)
 
-flag = True
-while flag:
-    flag = Film.print_films(films_iter, 5)
+while True:
+    flag = Console.print_films(films_iter, 5)
     if not flag:
         print('Больше фильмов нет')
         break
