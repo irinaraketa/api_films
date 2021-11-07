@@ -10,14 +10,6 @@ class Film:
     def get_films(all_films):
         return [Film(film_hash) for film_hash in all_films]
 
-    @staticmethod
-    def search_name(all_films, name_film: str) -> dict:
-        return list(filter(lambda x: x['nameRu'] == name_film, all_films))
-
-    @staticmethod
-    def sort_films(all_films, sorting_criteria: str):
-        return all_films.sort(key=lambda x: x[sorting_criteria])
-
     def __init__(self, film_hash):
         self.title = film_hash["nameRu"]
         self.year = film_hash["year"]
@@ -27,6 +19,16 @@ class Film:
         return inspect.cleandoc(f"""Название: {self.title} 
                 Год: {self.year}
                 Рейтинг: {self.rating}""")
+
+class Cinema:
+    def __init__(self, all_films):
+        self.all_films = all_films
+
+    def sort_films(self, sorting_criteria: str):
+        return self.all_films.sort(key=lambda x: x[sorting_criteria])
+
+    def search_name(self, name_film: str) -> dict:
+        return list(filter(lambda x: x['nameRu'] == name_film, self.all_films))
 
 class ConsoleInterface:
     def print_films(films):
@@ -97,7 +99,8 @@ choice_show = input()
 
 if choice_show == '1':
     all_films = get_films_response('/api/v2.2/films/top', {})
-    Film.sort_films(all_films, 'year')
+    cinema = Cinema(all_films)
+    cinema.sort_films('year')
     films = Film.get_films(all_films)
     ConsoleInterface.print_films(films)
 
@@ -117,7 +120,8 @@ elif choice_show == '2':
 
     all_films = get_films_response('/api/v2.1/films/search-by-filters', 
                           {"genre": parameter_id})
-    Film.sort_films(all_films, 'rating')
+    cinema = Cinema(all_films)
+    cinema.sort_films('rating')
     films = Film.get_films(all_films)
     if len(films) > 5:
         ConsoleInterface.print_pages(films, 5)
@@ -127,7 +131,8 @@ elif choice_show == '2':
 elif choice_show == '3':
     name_film = input('Введите название фильма: ')
     all_films = get_films_response('/api/v2.2/films/top', {})
-    found_film = Film.search_name(all_films, name_film)
+    cinema = Cinema(all_films)
+    found_film = cinema.search_name(name_film)
     if found_film:
         found_film = Film.get_films(found_film)
         ConsoleInterface.print_films(found_film)
